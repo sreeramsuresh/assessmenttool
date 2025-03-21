@@ -1,0 +1,333 @@
+/* NDISDashboard.css */
+
+/* Main Container */
+.dashboard-container {
+  width: 100%;
+  background-color: #f9fafb;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Header */
+.dashboard-header {
+  margin-bottom: 24px;
+}
+
+.dashboard-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  color: #6b7280;
+}
+
+.user-name {
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+.user-role {
+  background-color: #dbeafe;
+  color: #1e40af;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.user-organization {
+  font-size: 14px;
+}
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 256px;
+}
+
+.loading-text {
+  font-size: 20px;
+  color: #6b7280;
+}
+
+/* Grid Layouts */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+@media (min-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+@media (min-width: 1024px) {
+  .charts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Card Components */
+.stats-card {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 16px;
+}
+
+/* Stats Grid */
+.stats-grid-inner {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.stat-box {
+  padding: 12px;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.stat-box-blue {
+  background-color: #eff6ff;
+}
+
+.stat-box-green {
+  background-color: #ecfdf5;
+}
+
+.stat-box-yellow {
+  background-color: #fffbeb;
+}
+
+.stat-value {
+  font-size: 30px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.stat-box-blue .stat-value {
+  color: #2563eb;
+}
+
+.stat-box-green .stat-value {
+  color: #10b981;
+}
+
+.stat-box-yellow .stat-value {
+  color: #d97706;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Chart Container */
+.chart-container {
+  height: 256px;
+}
+
+/* Custom Tooltip */
+.custom-tooltip {
+  background-color: white;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.tooltip-label {
+  font-weight: 600;
+}
+
+.tooltip-content {
+  font-size: 14px;
+}
+
+/* Activity List */
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.activity-blue {
+  background-color: #eff6ff;
+}
+
+.activity-green {
+  background-color: #ecfdf5;
+}
+
+.activity-yellow {
+  background-color: #fffbeb;
+}
+
+.activity-purple {
+  background-color: #f5f3ff;
+}
+
+.activity-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.activity-blue .activity-dot {
+  background-color: #3b82f6;
+}
+
+.activity-green .activity-dot {
+  background-color: #10b981;
+}
+
+.activity-yellow .activity-dot {
+  background-color: #f59e0b;
+}
+
+.activity-purple .activity-dot {
+  background-color: #8b5cf6;
+}
+
+.activity-text {
+  font-size: 14px;
+  flex-grow: 1;
+}
+
+.activity-date {
+  font-size: 12px;
+  color: #6b7280;
+  margin-left: auto;
+}
+
+/* Table Styles */
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.view-all-button {
+  color: #2563eb;
+  font-size: 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.view-all-button:hover {
+  text-decoration: underline;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.assessments-table {
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.assessments-table th {
+  padding: 12px 24px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.assessments-table td {
+  padding: 16px 24px;
+  white-space: nowrap;
+  font-size: 14px;
+  color: #6b7280;
+  border-top: 1px solid #e5e7eb;
+}
+
+.participant-name {
+  font-weight: 500;
+  color: #111827;
+}
+
+/* Status Badges */
+.status-badge {
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 9999px;
+  display: inline-flex;
+}
+
+.status-completed {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.status-reviewed {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+/* Action Buttons */
+.action-button {
+  color: #2563eb;
+  background: none;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  margin-right: 12px;
+}
+
+.action-button:hover {
+  color: #1d4ed8;
+}

@@ -1,0 +1,266 @@
+/* src/styles/AssessmentHistory.css */
+.assessment-history {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.history-header h1 {
+  color: #2c3e50;
+  margin: 0;
+}
+
+.new-assessment-btn {
+  background-color: #3498db;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.new-assessment-btn:hover {
+  background-color: #2980b9;
+}
+
+.filter-section {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.filter-section h2 {
+  color: #2c3e50;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.filter-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.filter-group {
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #4a5568;
+}
+
+.filter-group input,
+.filter-group select {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.filter-actions {
+  display: flex;
+  align-items: flex-end;
+  margin-left: auto;
+}
+
+.reset-btn {
+  background-color: #f1f1f1;
+  color: #333;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.reset-btn:hover {
+  background-color: #e0e0e0;
+}
+
+.assessments-table-container {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  overflow: auto;
+  margin-bottom: 1.5rem;
+}
+
+.assessments-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.assessments-table th,
+.assessments-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.assessments-table th {
+  font-weight: 600;
+  color: #4a5568;
+  background-color: #f8f9fa;
+}
+
+.assessments-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.3rem 0.6rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-success {
+  background-color: #e6f7ee;
+  color: #27ae60;
+}
+
+.badge-warning {
+  background-color: #fef9e6;
+  color: #f39c12;
+}
+
+.badge-info {
+  background-color: #e6f0fa;
+  color: #3498db;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.view-btn,
+.review-btn {
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+}
+
+.view-btn {
+  background-color: #3498db;
+  color: white;
+}
+
+.view-btn:hover {
+  background-color: #2980b9;
+}
+
+.review-btn {
+  background-color: #f39c12;
+  color: white;
+}
+
+.review-btn:hover {
+  background-color: #e67e22;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+.pagination-btn {
+  background-color: #f1f1f1;
+  color: #333;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.pagination-btn:disabled {
+  background-color: #e0e0e0;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.pagination-btn:not(:disabled):hover {
+  background-color: #ddd;
+}
+
+.pagination-info {
+  margin: 0 1rem;
+  color: #666;
+}
+
+.no-assessments {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  padding: 2rem;
+  text-align: center;
+  color: #7f8c8d;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: #7f8c8d;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+  .history-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .filter-row {
+    flex-direction: column;
+  }
+
+  .filter-actions {
+    margin-left: 0;
+    margin-top: 1rem;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+}
