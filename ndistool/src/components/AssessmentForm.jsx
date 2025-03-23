@@ -124,7 +124,7 @@ const AssessmentForm = () => {
   };
 
   const nextSection = () => {
-    if (currentSection < sections.length - 1) {
+    if (currentSection < sections.length) {
       setCurrentSection(currentSection + 1);
       window.scrollTo(0, 0);
     }
@@ -213,143 +213,135 @@ const AssessmentForm = () => {
     );
   };
 
+  // Render participant information form (first step)
+  const renderParticipantInfo = () => {
+    return (
+      <div className="participant-info">
+        <h2>Participant Information</h2>
+        <div className="form-group">
+          <label>Full Name:</label>
+          <input
+            type="text"
+            name="fullName"
+            value={participantDetails.fullName}
+            onChange={handleParticipantChange}
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>NDIS Number:</label>
+          <input
+            type="text"
+            name="ndisNumber"
+            value={participantDetails.ndisNumber}
+            onChange={handleParticipantChange}
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Date of Birth:</label>
+          <input
+            type="date"
+            name="dateOfBirth"
+            value={participantDetails.dateOfBirth}
+            onChange={handleParticipantChange}
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Contact Number:</label>
+          <input
+            type="tel"
+            name="contactNumber"
+            value={participantDetails.contactNumber}
+            onChange={handleParticipantChange}
+          />
+        </div>
+        <div className="form-group">
+          <label>Email:</label>
+          <input
+            type="email"
+            name="email"
+            value={participantDetails.email}
+            onChange={handleParticipantChange}
+          />
+        </div>
+        <div className="form-group">
+          <label>Address:</label>
+          <textarea
+            name="address"
+            value={participantDetails.address}
+            onChange={handleParticipantChange}
+          />
+        </div>
+      </div>
+    );
+  };
+
+  // Render assessment questions (steps 2-7)
+  const renderQuestions = () => {
+    // Get the appropriate section based on currentSection (subtract 1 because section 0 is participant info)
+    const sectionIndex = currentSection - 1;
+    const section = sections[sectionIndex];
+
+    return (
+      <div className="section-container">
+        <h2>
+          Section {currentSection}: {section.title}
+        </h2>
+
+        {renderScale()}
+
+        <div className="questions-container">
+          {section.questions.map((question, qIndex) => (
+            <div key={qIndex} className="question-item">
+              <div className="question-text">
+                <p>
+                  {qIndex + 1}. {question}
+                </p>
+              </div>
+              <div className="rating-selector">
+                {[1, 2, 3, 4, 5].map((value) => (
+                  <div key={value} className="rating-option">
+                    <input
+                      type="radio"
+                      id={`q-${sectionIndex}-${qIndex}-${value}`}
+                      name={`question-${sectionIndex}-${qIndex}`}
+                      value={value}
+                      checked={responses[`${sectionIndex}-${qIndex}`] === value}
+                      onChange={() =>
+                        handleResponseChange(sectionIndex, qIndex, value)
+                      }
+                    />
+                    <label htmlFor={`q-${sectionIndex}-${qIndex}-${value}`}>
+                      {value}
+                    </label>
+                  </div>
+                ))}
+              </div>
+              <div className="comment-section">
+                <label>Additional notes/observations:</label>
+                <textarea
+                  value={comments[`${sectionIndex}-${qIndex}`] || ""}
+                  onChange={(e) =>
+                    handleCommentChange(sectionIndex, qIndex, e.target.value)
+                  }
+                  placeholder="Enter additional observations or notes here..."
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="assessment-container">
       <h1>Strengths-Based Needs Assessment</h1>
 
-      {currentSection === 0 && (
-        <div className="participant-info">
-          <h2>Participant Information</h2>
-          <div className="form-group">
-            <label>Full Name:</label>
-            <input
-              type="text"
-              name="fullName"
-              value={participantDetails.fullName}
-              onChange={handleParticipantChange}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>NDIS Number:</label>
-            <input
-              type="text"
-              name="ndisNumber"
-              value={participantDetails.ndisNumber}
-              onChange={handleParticipantChange}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>Date of Birth:</label>
-            <input
-              type="date"
-              name="dateOfBirth"
-              value={participantDetails.dateOfBirth}
-              onChange={handleParticipantChange}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>Contact Number:</label>
-            <input
-              type="tel"
-              name="contactNumber"
-              value={participantDetails.contactNumber}
-              onChange={handleParticipantChange}
-            />
-          </div>
-          <div className="form-group">
-            <label>Email:</label>
-            <input
-              type="email"
-              name="email"
-              value={participantDetails.email}
-              onChange={handleParticipantChange}
-            />
-          </div>
-          <div className="form-group">
-            <label>Address:</label>
-            <textarea
-              name="address"
-              value={participantDetails.address}
-              onChange={handleParticipantChange}
-            />
-          </div>
-        </div>
-      )}
-
-      {currentSection > 0 && (
-        <>
-          <div className="section-container">
-            <h2>
-              Section {currentSection}: {sections[currentSection - 1].title}
-            </h2>
-
-            {renderScale()}
-
-            <div className="questions-container">
-              {sections[currentSection - 1].questions.map(
-                (question, qIndex) => (
-                  <div key={qIndex} className="question-item">
-                    <div className="question-text">
-                      <p>
-                        {qIndex + 1}. {question}
-                      </p>
-                    </div>
-                    <div className="rating-selector">
-                      {[1, 2, 3, 4, 5].map((value) => (
-                        <div key={value} className="rating-option">
-                          <input
-                            type="radio"
-                            id={`q-${currentSection - 1}-${qIndex}-${value}`}
-                            name={`question-${currentSection - 1}-${qIndex}`}
-                            value={value}
-                            checked={
-                              responses[`${currentSection - 1}-${qIndex}`] ===
-                              value
-                            }
-                            onChange={() =>
-                              handleResponseChange(
-                                currentSection - 1,
-                                qIndex,
-                                value
-                              )
-                            }
-                          />
-                          <label
-                            htmlFor={`q-${
-                              currentSection - 1
-                            }-${qIndex}-${value}`}
-                          >
-                            {value}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="comment-section">
-                      <label>Additional notes/observations:</label>
-                      <textarea
-                        value={
-                          comments[`${currentSection - 1}-${qIndex}`] || ""
-                        }
-                        onChange={(e) =>
-                          handleCommentChange(
-                            currentSection - 1,
-                            qIndex,
-                            e.target.value
-                          )
-                        }
-                        placeholder="Enter additional observations or notes here..."
-                      />
-                    </div>
-                  </div>
-                )
-              )}
-            </div>
-          </div>
-        </>
-      )}
+      {/* Show participant info or questions based on current section */}
+      {currentSection === 0 ? renderParticipantInfo() : renderQuestions()}
 
       <div className="navigation-buttons">
         {currentSection > 0 && (
@@ -359,11 +351,7 @@ const AssessmentForm = () => {
         )}
 
         {currentSection < sections.length ? (
-          <button
-            className="next-button"
-            onClick={nextSection}
-            disabled={currentSection === sections.length}
-          >
+          <button className="next-button" onClick={nextSection}>
             Next
           </button>
         ) : (
