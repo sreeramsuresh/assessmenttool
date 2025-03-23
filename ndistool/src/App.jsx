@@ -6,6 +6,7 @@ import Login from "./components/Login";
 import Register from "./components/Register";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AssessmentHistory from "./components/AssessmentHistory";
+import Profile from "./components/Profile";
 import Navbar from "./components/Navbar";
 import AssessmentReport from "./components/AssessmentReport";
 import "./App.css";
@@ -48,6 +49,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <AssessmentReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
                 </ProtectedRoute>
               }
             />
