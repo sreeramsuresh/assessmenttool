@@ -50,7 +50,7 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/" className="navbar-logo" onClick={closeMenu}>
-          NDIS Assessment Tool
+          GScorE Assessment Tool
         </Link>
 
         <div className="menu-icon" onClick={toggleMenu}>
