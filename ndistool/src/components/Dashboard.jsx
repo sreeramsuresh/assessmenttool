@@ -109,61 +109,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="recent-assessments">
-          <div className="section-header">
-            <h2>Recent Assessments</h2>
-            <Link to="/history" className="view-all-link">
-              View All
-            </Link>
-          </div>
-
-          {recentAssessments.length > 0 ? (
-            <div className="assessments-table-container">
-              <table className="assessments-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Participant</th>
-                    <th>NDIS Number</th>
-                    <th>Score</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentAssessments.map((assessment) => (
-                    <tr key={assessment._id}>
-                      <td>{formatDate(assessment.date)}</td>
-                      <td>{assessment.participantDetails.fullName}</td>
-                      <td>{assessment.participantDetails.ndisNumber}</td>
-                      <td>{assessment.totalScore}</td>
-                      <td>
-                        <span
-                          className={`status ${assessment.status.toLowerCase()}`}
-                        >
-                          {assessment.status}
-                        </span>
-                      </td>
-                      <td>
-                        <Link
-                          to={`/report/${assessment._id}`}
-                          className="view-btn"
-                        >
-                          View
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="no-assessments">
-              <p>No recent assessments found.</p>
-            </div>
-          )}
-        </div>
-
         <div className="quick-actions">
           <h2>Quick Actions</h2>
           <div className="action-buttons">
