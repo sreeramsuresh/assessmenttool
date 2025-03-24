@@ -1,5 +1,5 @@
 // src/components/Login.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import "../styles/Login.css";
@@ -14,6 +14,16 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  // Add auth-page class to body when component mounts
+  useEffect(() => {
+    document.body.classList.add("auth-page");
+
+    // Remove auth-page class when component unmounts
+    return () => {
+      document.body.classList.remove("auth-page");
+    };
+  }, []);
 
   const { email, password } = formData;
 
@@ -57,7 +67,10 @@ const Login = () => {
     <div className="login-container">
       <div className="login-card">
         <div className="login-header">
-          <h1>NDIS Assessment Tool</h1>
+          <div className="auth-logo">
+            <span className="gig">Gig</span>
+            <span className="labz">Labz</span>
+          </div>
           <p>Login to your account</p>
         </div>
 

@@ -19,6 +19,16 @@ const ResetPassword = () => {
   const [validatingToken, setValidatingToken] = useState(true);
   const [tokenValid, setTokenValid] = useState(false);
 
+  // Add auth-page class to body when component mounts
+  useEffect(() => {
+    document.body.classList.add("auth-page");
+
+    // Remove auth-page class when component unmounts
+    return () => {
+      document.body.classList.remove("auth-page");
+    };
+  }, []);
+
   useEffect(() => {
     const validateToken = async () => {
       try {
@@ -107,7 +117,10 @@ const ResetPassword = () => {
       <div className="reset-password-container">
         <div className="reset-password-card">
           <div className="reset-password-header">
-            <h1>NDIS Assessment Tool</h1>
+            <div className="auth-logo">
+              <span className="gig">Gig</span>
+              <span className="labz">Labz</span>
+            </div>
             <p>Reset Your Password</p>
           </div>
           <div className="loading-message">Validating your reset link...</div>
@@ -121,7 +134,10 @@ const ResetPassword = () => {
       <div className="reset-password-container">
         <div className="reset-password-card">
           <div className="reset-password-header">
-            <h1>NDIS Assessment Tool</h1>
+            <div className="auth-logo">
+              <span className="gig">Gig</span>
+              <span className="labz">Labz</span>
+            </div>
             <p>Reset Your Password</p>
           </div>
           <div className="error-container">
@@ -147,7 +163,10 @@ const ResetPassword = () => {
     <div className="reset-password-container">
       <div className="reset-password-card">
         <div className="reset-password-header">
-          <h1>NDIS Assessment Tool</h1>
+          <div className="auth-logo">
+            <span className="gig">Gig</span>
+            <span className="labz">Labz</span>
+          </div>
           <p>Reset Your Password</p>
         </div>
 

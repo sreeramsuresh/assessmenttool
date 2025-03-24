@@ -9,7 +9,10 @@ import ResetPassword from "./components/ResetPassword";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AssessmentHistory from "./components/AssessmentHistory";
 import Profile from "./components/Profile";
+import Settings from "./components/Settings";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+import ConditionalFooter from "./components/ConditionalFooter";
 import AssessmentReport from "./components/AssessmentReport";
 import "./App.css";
 
@@ -64,8 +67,17 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </div>
+        <ConditionalFooter />
       </div>
     </Router>
   );

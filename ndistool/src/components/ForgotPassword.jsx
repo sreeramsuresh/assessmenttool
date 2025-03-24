@@ -1,5 +1,5 @@
 // src/components/ForgotPassword.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import "../styles/ForgotPassword.css";
@@ -11,6 +11,16 @@ const ForgotPassword = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+
+  // Add auth-page class to body when component mounts
+  useEffect(() => {
+    document.body.classList.add("auth-page");
+
+    // Remove auth-page class when component unmounts
+    return () => {
+      document.body.classList.remove("auth-page");
+    };
+  }, []);
 
   const handleChange = (e) => {
     setEmail(e.target.value);
@@ -60,7 +70,10 @@ const ForgotPassword = () => {
     <div className="forgot-password-container">
       <div className="forgot-password-card">
         <div className="forgot-password-header">
-          <h1>NDIS Assessment Tool</h1>
+          <div className="auth-logo">
+            <span className="gig">Gig</span>
+            <span className="labz">Labz</span>
+          </div>
           <p>Reset Your Password</p>
         </div>
 

@@ -28,6 +28,28 @@
   cursor: pointer;
 }
 
+.logo-container {
+  display: flex;
+  align-items: center;
+}
+
+.gig {
+  color: #2563eb; /* Blue */
+  font-weight: 700;
+}
+
+.labz {
+  color: #f59e0b; /* Amber */
+  font-weight: 700;
+}
+
+.logo-text {
+  color: #4a5568;
+  font-size: 1.2rem;
+  margin-left: 0.5rem;
+  font-weight: 500;
+}
+
 .nav-menu {
   display: flex;
   align-items: center;
@@ -197,5 +219,9 @@
 
   .dropdown:hover .dropdown-menu {
     display: block;
+  }
+
+  .logo-text {
+    display: none;
   }
 }

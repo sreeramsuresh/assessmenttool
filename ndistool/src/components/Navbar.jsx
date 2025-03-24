@@ -1,4 +1,4 @@
-// src/components/Navbar.js
+// src/components/Navbar.jsx
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import "../styles/Navbar.css";
@@ -50,7 +50,11 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/" className="navbar-logo" onClick={closeMenu}>
-          GScorE Assessment Tool
+          <div className="logo-container">
+            <span className="gig">Gig</span>
+            <span className="labz">Labz</span>
+            <span className="logo-text">Assessment Tool</span>
+          </div>
         </Link>
 
         <div className="menu-icon" onClick={toggleMenu}>

@@ -1,5 +1,5 @@
 // src/components/Register.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import "../styles/Register.css";
@@ -19,6 +19,16 @@ const Register = () => {
   const [error, setError] = useState("");
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+
+  // Add auth-page class to body when component mounts
+  useEffect(() => {
+    document.body.classList.add("auth-page");
+
+    // Remove auth-page class when component unmounts
+    return () => {
+      document.body.classList.remove("auth-page");
+    };
+  }, []);
 
   const { name, email, password, confirmPassword, organization, position } =
     formData;
@@ -127,7 +137,10 @@ const Register = () => {
     <div className="register-container">
       <div className="register-card">
         <div className="register-header">
-          <h1>NDIS Assessment Tool</h1>
+          <div className="auth-logo">
+            <span className="gig">Gig</span>
+            <span className="labz">Labz</span>
+          </div>
           <p>Create a new account</p>
         </div>
 
