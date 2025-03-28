@@ -13,7 +13,14 @@ dotenv.config();
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/users");
 const assessmentRoutes = require("./routes/assessments");
-const participantRoutes = require("./routes/participants"); // Add participants routes
+const participantRoutes = require("./routes/participants");
+const assignmentRoutes = require("./routes/assignments");
+
+// Import controllers
+const dashboardController = require("./controllers/dashboardController");
+
+// Import middleware
+const auth = require("./middleware/auth");
 
 const app = express();
 
@@ -54,7 +61,12 @@ connectDB();
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/assessments", assessmentRoutes);
-app.use("/api/participants", participantRoutes); // Register participants routes
+app.use("/api/participants", participantRoutes);
+app.use("/api/assignments", assignmentRoutes);
+
+// Dashboard route
+app.get("/api/dashboard", auth, dashboardController.getDashboardData);
+app.get("/api/stats/system", auth, dashboardController.getSystemStats);
 
 // Create logs directory if it doesn't exist
 const logsDir = path.join(__dirname, "logs");

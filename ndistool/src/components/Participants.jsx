@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import "../styles/Participants.css";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+const API_URL = import.meta.env.REACT_APP_API_URL || "http://localhost:5000";
 
 const Participants = () => {
   const [participants, setParticipants] = useState([]);

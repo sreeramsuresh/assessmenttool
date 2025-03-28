@@ -3,7 +3,9 @@ const express = require("express");
 const router = express.Router();
 const { check, validationResult } = require("express-validator");
 const User = require("../models/User");
+const Participant = require("../models/Participant");
 const Assessment = require("../models/Assessment");
+const Assignment = require("../models/Assignment");
 const auth = require("../middleware/auth");
 const { checkPermission } = require("../middleware/roleAuth");
 
@@ -39,7 +41,15 @@ router.put(
     auth,
     [
       check("name", "Name is required").not().isEmpty(),
-      check("organization", "Organization is required").not().isEmpty(),
+      check("organization", "Organization is required").custom(
+        (value, { req }) => {
+          // Only required for non-participant roles
+          if (req.user.role !== "participant" && !value) {
+            throw new Error("Organization is required");
+          }
+          return true;
+        }
+      ),
     ],
   ],
   async (req, res) => {
@@ -51,7 +61,14 @@ router.put(
       });
     }
 
-    const { name, organization, position, profileImage } = req.body;
+    const {
+      name,
+      organization,
+      position,
+      profileImage,
+      contactNumber,
+      address,
+    } = req.body;
 
     // Build profile object
     const profileFields = {};
@@ -59,6 +76,10 @@ router.put(
     if (organization) profileFields.organization = organization;
     if (position) profileFields.position = position;
     if (profileImage) profileFields.profileImage = profileImage;
+
+    // Participant-specific fields
+    if (contactNumber) profileFields.contactNumber = contactNumber;
+    if (address) profileFields.address = address;
 
     try {
       let user = await User.findById(req.user.id);
@@ -156,111 +177,158 @@ router.get("/dashboard", auth, async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    // Get assessment stats
-    let query = {};
+    let dashboardData = {
+      user: user.getPublicProfile(),
+    };
 
-    // If assessor, only show their assessments
-    if (req.user.role === "assessor") {
-      query.assessor = req.user.id;
-    }
+    // Different dashboard data based on role
+    if (user.role === "participant") {
+      // Get participant's assigned assessments
+      const assessments = await Assessment.find({ participant: user._id })
+        .sort({ date: -1 })
+        .populate("assessor", "name");
 
-    const totalAssessments = await Assessment.countDocuments(query);
-    const completedAssessments = await Assessment.countDocuments({
-      ...query,
-      status: "Completed",
-    });
-    const pendingReviewAssessments = await Assessment.countDocuments({
-      ...query,
-      status: "Pending Review",
-    });
-    const reviewedAssessments = await Assessment.countDocuments({
-      ...query,
-      status: "Reviewed",
-    });
+      const total = assessments.length;
+      const completed = assessments.filter(
+        (a) => a.status === "Completed" || a.status === "Reviewed"
+      ).length;
+      const inProgress = assessments.filter(
+        (a) => a.status === "In Progress"
+      ).length;
+      const pending = assessments.filter((a) => a.status === "Assigned").length;
 
-    // Get recent assessments
-    const recentAssessments = await Assessment.find(query)
-      .sort({ date: -1 })
-      .limit(5)
-      .populate("assessor", "name");
+      dashboardData.stats = {
+        total,
+        completed,
+        inProgress,
+        pending,
+      };
 
-    // Get monthly stats (last 6 months)
-    const today = new Date();
-    const sixMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 5, 1);
+      dashboardData.assessments = assessments;
+    } else if (user.role === "assessor") {
+      // Get assessment stats for assessor
+      let query = { assessor: user._id };
 
-    const monthlyStats = await Assessment.aggregate([
-      {
-        $match: {
-          ...query,
-          date: { $gte: sixMonthsAgo },
-        },
-      },
-      {
-        $group: {
-          _id: {
-            year: { $year: "$date" },
-            month: { $month: "$date" },
-          },
-          count: { $sum: 1 },
-        },
-      },
-      {
-        $sort: { "_id.year": 1, "_id.month": 1 },
-      },
-    ]);
-
-    // Format monthly stats for frontend
-    const monthNames = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
-
-    const monthlyData = [];
-
-    for (let i = 0; i < 6; i++) {
-      const targetMonth = new Date(
-        today.getFullYear(),
-        today.getMonth() - 5 + i,
-        1
-      );
-      const targetYear = targetMonth.getFullYear();
-      const targetMonthNum = targetMonth.getMonth() + 1;
-
-      const found = monthlyStats.find(
-        (stat) =>
-          stat._id.year === targetYear && stat._id.month === targetMonthNum
-      );
-
-      monthlyData.push({
-        month: monthNames[targetMonth.getMonth()],
-        year: targetYear,
-        count: found ? found.count : 0,
+      const totalAssessments = await Assessment.countDocuments(query);
+      const draftAssessments = await Assessment.countDocuments({
+        ...query,
+        status: "Draft",
       });
-    }
+      const assignedAssessments = await Assessment.countDocuments({
+        ...query,
+        status: "Assigned",
+      });
+      const inProgressAssessments = await Assessment.countDocuments({
+        ...query,
+        status: "In Progress",
+      });
+      const completedAssessments = await Assessment.countDocuments({
+        ...query,
+        status: "Completed",
+      });
+      const pendingReviewAssessments = await Assessment.countDocuments({
+        ...query,
+        status: "Pending Review",
+      });
+      const reviewedAssessments = await Assessment.countDocuments({
+        ...query,
+        status: "Reviewed",
+      });
 
-    res.json({
-      success: true,
-      dashboardData: {
-        user: user.getPublicProfile(),
-        stats: {
+      // Get assigned participants
+      const assignments = await Assignment.find({ assessor: user._id })
+        .populate("participant", "name ndisNumber")
+        .sort("-createdAt");
+
+      // Get recent assessments
+      const recentAssessments = await Assessment.find(query)
+        .sort({ date: -1 })
+        .limit(5)
+        .populate("participant", "name ndisNumber")
+        .populate("assessor", "name");
+
+      dashboardData.stats = {
+        total: totalAssessments,
+        draft: draftAssessments,
+        assigned: assignedAssessments,
+        inProgress: inProgressAssessments,
+        completed: completedAssessments,
+        pendingReview: pendingReviewAssessments,
+        reviewed: reviewedAssessments,
+      };
+
+      dashboardData.recentAssessments = recentAssessments;
+      dashboardData.assignments = assignments;
+    } else if (user.role === "supervisor" || user.role === "admin") {
+      // Get all assessments (supervisors see all)
+      const totalAssessments = await Assessment.countDocuments();
+      const draftAssessments = await Assessment.countDocuments({
+        status: "Draft",
+      });
+      const assignedAssessments = await Assessment.countDocuments({
+        status: "Assigned",
+      });
+      const inProgressAssessments = await Assessment.countDocuments({
+        status: "In Progress",
+      });
+      const completedAssessments = await Assessment.countDocuments({
+        status: "Completed",
+      });
+      const pendingReviewAssessments = await Assessment.countDocuments({
+        status: "Pending Review",
+      });
+      const reviewedAssessments = await Assessment.countDocuments({
+        status: "Reviewed",
+      });
+
+      // Get user counts
+      const totalAssessors = await User.countDocuments({ role: "assessor" });
+      const totalParticipants = await User.countDocuments({
+        role: "participant",
+      });
+      const activeAssignments = await Assignment.countDocuments({
+        status: { $ne: "completed" },
+      });
+
+      // Get recent assignments
+      const recentAssignments = await Assignment.find()
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .populate("supervisor", "name")
+        .populate("assessor", "name")
+        .populate("participant", "name ndisNumber");
+
+      // Get recent assessments
+      const recentAssessments = await Assessment.find()
+        .sort({ date: -1 })
+        .limit(5)
+        .populate("participant", "name ndisNumber")
+        .populate("assessor", "name");
+
+      dashboardData.stats = {
+        assessments: {
           total: totalAssessments,
+          draft: draftAssessments,
+          assigned: assignedAssessments,
+          inProgress: inProgressAssessments,
           completed: completedAssessments,
           pendingReview: pendingReviewAssessments,
           reviewed: reviewedAssessments,
         },
-        recentAssessments,
-        monthlyData,
-      },
+        users: {
+          assessors: totalAssessors,
+          participants: totalParticipants,
+          activeAssignments,
+        },
+      };
+
+      dashboardData.recentAssessments = recentAssessments;
+      dashboardData.recentAssignments = recentAssignments;
+    }
+
+    res.json({
+      success: true,
+      dashboardData,
     });
   } catch (err) {
     console.error(err.message);
@@ -275,7 +343,12 @@ router.get("/dashboard", auth, async (req, res) => {
 // @access  Private/Admin
 router.get("/", [auth, checkPermission("VIEW_USERS")], async (req, res) => {
   try {
-    const users = await User.find().select("-notifications").sort("name");
+    // Allow filtering by role
+    const roleFilter = req.query.role ? { role: req.query.role } : {};
+
+    const users = await User.find(roleFilter)
+      .select("-notifications")
+      .sort("name");
 
     res.json({
       success: true,
@@ -332,11 +405,11 @@ router.post(
       check("password", "Password must be at least 6 characters").isLength({
         min: 6,
       }),
-      check("organization", "Organization is required").not().isEmpty(),
       check("role", "Role is required").isIn([
         "assessor",
         "supervisor",
         "admin",
+        "participant",
       ]),
     ],
   ],
@@ -349,8 +422,20 @@ router.post(
       });
     }
 
-    const { name, email, password, organization, position, role, isActive } =
-      req.body;
+    const {
+      name,
+      email,
+      password,
+      organization,
+      position,
+      role,
+      isActive,
+      ndisNumber,
+      dateOfBirth,
+      contactNumber,
+      address,
+      linkedParticipantId,
+    } = req.body;
 
     try {
       // Check if user exists
@@ -363,23 +448,123 @@ router.post(
         });
       }
 
-      // Create new user
-      user = new User({
+      // For participants, check if NDIS number is unique if provided
+      if (role === "participant" && ndisNumber) {
+        const existingParticipant = await User.findOne({ ndisNumber });
+        if (existingParticipant) {
+          return res.status(400).json({
+            success: false,
+            message: "Participant with this NDIS number already exists",
+          });
+        }
+      }
+
+      // Create new user with appropriate fields
+      const userData = {
         name,
         email,
         password,
-        organization,
-        position: position || "",
         role,
         isActive: isActive === false ? false : true,
         isEmailConfirmed: true, // Admin-created accounts don't need email confirmation
+      };
+
+      // Add role-specific fields
+      if (role !== "participant") {
+        userData.organization = organization;
+        userData.position = position || "";
+      } else {
+        userData.ndisNumber = ndisNumber;
+        userData.dateOfBirth = dateOfBirth;
+        userData.contactNumber = contactNumber;
+        userData.address = address;
+        userData.linkedParticipantId = linkedParticipantId;
+      }
+
+      user = new User(userData);
+      await user.save();
+
+      res.json({
+        success: true,
+        message: "User created successfully",
+        user: user.getPublicProfile(),
+      });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({ success: false, message: "Server error" });
+    }
+  }
+);
+
+// @route   POST api/users/participant-from-participant
+// @desc    Create a participant user from existing participant record
+// @access  Private/Admin or Supervisor
+router.post(
+  "/participant-from-participant",
+  [
+    auth,
+    checkPermission("CREATE_USER"),
+    [
+      check("participantId", "Participant ID is required").not().isEmpty(),
+      check("password", "Password must be at least 6 characters").isLength({
+        min: 6,
+      }),
+    ],
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array(),
+      });
+    }
+
+    const { participantId, password } = req.body;
+
+    try {
+      // Find the participant record
+      const participant = await Participant.findById(participantId);
+
+      if (!participant) {
+        return res.status(404).json({
+          success: false,
+          message: "Participant not found",
+        });
+      }
+
+      // Check if a user with this email already exists
+      if (participant.email) {
+        const existingUser = await User.findOne({ email: participant.email });
+        if (existingUser) {
+          return res.status(400).json({
+            success: false,
+            message: "User with this email already exists",
+          });
+        }
+      }
+
+      // Create a user account for this participant
+      const user = new User({
+        name: participant.fullName,
+        email:
+          participant.email || `ndis-${participant.ndisNumber}@example.com`, // Fallback email if none provided
+        password,
+        role: "participant",
+        ndisNumber: participant.ndisNumber,
+        dateOfBirth: participant.dateOfBirth,
+        contactNumber: participant.contactNumber,
+        address: participant.address,
+        isActive: true,
+        isEmailConfirmed: true, // Admin-created accounts don't need email confirmation
+        linkedParticipantId: participant._id,
       });
 
       await user.save();
 
       res.json({
         success: true,
-        message: "User created successfully",
+        message: "Participant user created successfully",
         user: user.getPublicProfile(),
       });
     } catch (err) {
@@ -400,11 +585,11 @@ router.put(
     [
       check("name", "Name is required").not().isEmpty(),
       check("email", "Please include a valid email").isEmail(),
-      check("organization", "Organization is required").not().isEmpty(),
       check("role", "Role is required").isIn([
         "assessor",
         "supervisor",
         "admin",
+        "participant",
       ]),
     ],
   ],
@@ -417,7 +602,18 @@ router.put(
       });
     }
 
-    const { name, email, organization, position, role, isActive } = req.body;
+    const {
+      name,
+      email,
+      organization,
+      position,
+      role,
+      isActive,
+      ndisNumber,
+      dateOfBirth,
+      contactNumber,
+      address,
+    } = req.body;
 
     try {
       let user = await User.findById(req.params.id);
@@ -440,13 +636,41 @@ router.put(
         }
       }
 
+      // Check if NDIS number is changing (for participants) and if it's already in use
+      if (
+        role === "participant" &&
+        ndisNumber &&
+        ndisNumber !== user.ndisNumber
+      ) {
+        const existingParticipant = await User.findOne({ ndisNumber });
+
+        if (
+          existingParticipant &&
+          existingParticipant._id.toString() !== req.params.id
+        ) {
+          return res.status(400).json({
+            success: false,
+            message: "NDIS number is already in use",
+          });
+        }
+      }
+
       // Update user
       user.name = name;
       user.email = email;
-      user.organization = organization;
-      user.position = position || "";
       user.role = role;
       user.isActive = isActive === false ? false : true;
+
+      // Update role-specific fields
+      if (role !== "participant") {
+        user.organization = organization;
+        user.position = position || "";
+      } else {
+        user.ndisNumber = ndisNumber;
+        user.dateOfBirth = dateOfBirth;
+        user.contactNumber = contactNumber;
+        user.address = address;
+      }
 
       await user.save();
 
@@ -496,17 +720,30 @@ router.delete(
 
       // Check if user has assessments
       const assessmentCount = await Assessment.countDocuments({
-        assessor: user._id,
+        $or: [
+          { assessor: user._id },
+          { participant: user._id },
+          { reviewedBy: user._id },
+        ],
       });
 
-      if (assessmentCount > 0) {
+      // Check for assignments
+      const assignmentCount = await Assignment.countDocuments({
+        $or: [
+          { supervisor: user._id },
+          { assessor: user._id },
+          { participant: user._id },
+        ],
+      });
+
+      if (assessmentCount > 0 || assignmentCount > 0) {
         // Instead of deleting, deactivate the user
         user.isActive = false;
         await user.save();
 
         return res.json({
           success: true,
-          message: `User deactivated instead of deleted because they have ${assessmentCount} assessments`,
+          message: `User deactivated instead of deleted because they have ${assessmentCount} assessments and/or ${assignmentCount} assignments`,
         });
       }
 
@@ -532,33 +769,56 @@ router.delete(
   }
 );
 
-// @route   GET api/users/assessors
-// @desc    Get all assessors (for assignments)
+// @route   GET api/users/role/:role
+// @desc    Get users by role
 // @access  Private
-router.get("/role/assessors", auth, async (req, res) => {
+router.get("/role/:role", auth, async (req, res) => {
   try {
-    const assessors = await User.getAssessors();
+    const role = req.params.role;
+
+    // Validate role
+    if (!["assessor", "supervisor", "admin", "participant"].includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid role specified",
+      });
+    }
+
+    // Check permissions
+    if (
+      (role === "supervisor" || role === "admin") &&
+      !["admin", "supervisor"].includes(req.user.role)
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to view users of this role",
+      });
+    }
+
+    let users;
+
+    if (role === "assessor") {
+      users = await User.getAssessors();
+    } else if (role === "supervisor") {
+      users = await User.getSupervisors();
+    } else if (role === "participant") {
+      users = await User.getParticipants();
+    } else {
+      // Admin role - only admins can see other admins
+      if (req.user.role !== "admin") {
+        return res.status(403).json({
+          success: false,
+          message: "Not authorized to view admin users",
+        });
+      }
+      users = await User.find({ role: "admin", isActive: true })
+        .select("name email organization position")
+        .sort("name");
+    }
 
     res.json({
       success: true,
-      assessors,
-    });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});
-
-// @route   GET api/users/supervisors
-// @desc    Get all supervisors (for assignments)
-// @access  Private
-router.get("/role/supervisors", auth, async (req, res) => {
-  try {
-    const supervisors = await User.getSupervisors();
-
-    res.json({
-      success: true,
-      supervisors,
+      users,
     });
   } catch (err) {
     console.error(err.message);

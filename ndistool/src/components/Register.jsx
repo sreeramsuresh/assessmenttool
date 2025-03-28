@@ -14,10 +14,17 @@ const Register = () => {
     confirmPassword: "",
     organization: "",
     position: "",
+    role: "assessor", // Default role
+    // Participant-specific fields
+    ndisNumber: "",
+    dateOfBirth: "",
+    contactNumber: "",
+    address: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [errors, setErrors] = useState({});
+  const [isParticipant, setIsParticipant] = useState(false);
   const navigate = useNavigate();
 
   // Add auth-page class to body when component mounts
@@ -30,8 +37,19 @@ const Register = () => {
     };
   }, []);
 
-  const { name, email, password, confirmPassword, organization, position } =
-    formData;
+  const {
+    name,
+    email,
+    password,
+    confirmPassword,
+    organization,
+    position,
+    role,
+    ndisNumber,
+    dateOfBirth,
+    contactNumber,
+    address,
+  } = formData;
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -43,6 +61,12 @@ const Register = () => {
 
     // Clear general error
     if (error) setError("");
+  };
+
+  const handleRoleChange = (e) => {
+    const selectedRole = e.target.value;
+    setFormData({ ...formData, role: selectedRole });
+    setIsParticipant(selectedRole === "participant");
   };
 
   const validateForm = () => {
@@ -75,9 +99,19 @@ const Register = () => {
       newErrors.confirmPassword = "Passwords do not match";
     }
 
-    // Organization validation
-    if (!organization.trim()) {
+    // Organization validation (not needed for participants)
+    if (!isParticipant && !organization.trim()) {
       newErrors.organization = "Organization is required";
+    }
+
+    // Participant-specific validations
+    if (isParticipant) {
+      if (!ndisNumber.trim()) {
+        newErrors.ndisNumber = "NDIS number is required";
+      }
+      if (!dateOfBirth) {
+        newErrors.dateOfBirth = "Date of birth is required";
+      }
     }
 
     setErrors(newErrors);
@@ -210,32 +244,111 @@ const Register = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="organization">Organization</label>
-            <input
-              type="text"
-              id="organization"
-              name="organization"
-              value={organization}
-              onChange={handleChange}
-              placeholder="Enter your organization"
-              className={errors.organization ? "error" : ""}
-            />
-            {errors.organization && (
-              <div className="field-error">{errors.organization}</div>
-            )}
+            <label htmlFor="role">Account Type</label>
+            <select
+              id="role"
+              name="role"
+              value={role}
+              onChange={handleRoleChange}
+              className={errors.role ? "error" : ""}
+            >
+              <option value="assessor">Assessor</option>
+              <option value="supervisor">Supervisor</option>
+              <option value="participant">Participant</option>
+            </select>
+            {errors.role && <div className="field-error">{errors.role}</div>}
           </div>
 
-          <div className="form-group">
-            <label htmlFor="position">Position</label>
-            <input
-              type="text"
-              id="position"
-              name="position"
-              value={position}
-              onChange={handleChange}
-              placeholder="Enter your position (optional)"
-            />
-          </div>
+          {!isParticipant && (
+            <>
+              <div className="form-group">
+                <label htmlFor="organization">Organization</label>
+                <input
+                  type="text"
+                  id="organization"
+                  name="organization"
+                  value={organization}
+                  onChange={handleChange}
+                  placeholder="Enter your organization"
+                  className={errors.organization ? "error" : ""}
+                />
+                {errors.organization && (
+                  <div className="field-error">{errors.organization}</div>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="position">Position</label>
+                <input
+                  type="text"
+                  id="position"
+                  name="position"
+                  value={position}
+                  onChange={handleChange}
+                  placeholder="Enter your position (optional)"
+                />
+              </div>
+            </>
+          )}
+
+          {isParticipant && (
+            <div className="participant-fields">
+              <div className="form-group">
+                <label htmlFor="ndisNumber">NDIS Number</label>
+                <input
+                  type="text"
+                  id="ndisNumber"
+                  name="ndisNumber"
+                  value={ndisNumber}
+                  onChange={handleChange}
+                  placeholder="Enter your NDIS number"
+                  className={errors.ndisNumber ? "error" : ""}
+                />
+                {errors.ndisNumber && (
+                  <div className="field-error">{errors.ndisNumber}</div>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="dateOfBirth">Date of Birth</label>
+                <input
+                  type="date"
+                  id="dateOfBirth"
+                  name="dateOfBirth"
+                  value={dateOfBirth}
+                  onChange={handleChange}
+                  className={errors.dateOfBirth ? "error" : ""}
+                />
+                {errors.dateOfBirth && (
+                  <div className="field-error">{errors.dateOfBirth}</div>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="contactNumber">Contact Number</label>
+                <input
+                  type="tel"
+                  id="contactNumber"
+                  name="contactNumber"
+                  value={contactNumber}
+                  onChange={handleChange}
+                  placeholder="Enter your contact number"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="address">Address</label>
+                <textarea
+                  id="address"
+                  name="address"
+                  value={address}
+                  onChange={handleChange}
+                  placeholder="Enter your address"
+                  rows="3"
+                ></textarea>
+              </div>
+            </div>
+          )}
 
           <button type="submit" className="register-button" disabled={loading}>
             {loading ? "Registering..." : "Create Account"}

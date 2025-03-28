@@ -2,6 +2,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const Schema = mongoose.Schema;
 
 const UserSchema = new Schema({
@@ -26,12 +27,14 @@ const UserSchema = new Schema({
   },
   role: {
     type: String,
-    enum: ["assessor", "supervisor", "admin"],
+    enum: ["assessor", "supervisor", "admin", "participant"],
     default: "assessor",
   },
   organization: {
     type: String,
-    required: [true, "Organization is required"],
+    required: function () {
+      return this.role !== "participant"; // Only required for non-participants
+    },
   },
   position: String,
   profileImage: String,
@@ -56,7 +59,7 @@ const UserSchema = new Schema({
       message: String,
       type: {
         type: String,
-        enum: ["info", "warning", "success", "error"],
+        enum: ["info", "warning", "success", "error", "assignment"],
         default: "info",
       },
       isRead: {
@@ -70,6 +73,45 @@ const UserSchema = new Schema({
       link: String,
     },
   ],
+  // Participant specific fields
+  ndisNumber: {
+    type: String,
+    sparse: true, // Allows null/undefined values but enforces uniqueness when present
+    trim: true,
+  },
+  dateOfBirth: Date,
+  contactNumber: {
+    type: String,
+    trim: true,
+  },
+  address: {
+    type: String,
+    trim: true,
+  },
+  // Fields for tracking assignments
+  assignedAssessors: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
+  assignedParticipants: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
+  assignedBy: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
+  // Tracking if this is a participant created from existing participant data
+  linkedParticipantId: {
+    type: Schema.Types.ObjectId,
+    ref: "Participant",
+  },
 });
 
 // Encrypt password using bcrypt
@@ -165,7 +207,7 @@ UserSchema.methods.updateLastLogin = async function () {
 
 // Get public profile (safe to send to frontend)
 UserSchema.methods.getPublicProfile = function () {
-  return {
+  const profile = {
     id: this._id,
     name: this.name,
     email: this.email,
@@ -179,6 +221,16 @@ UserSchema.methods.getPublicProfile = function () {
     isEmailConfirmed: this.isEmailConfirmed,
     unreadNotifications: this.notifications.filter((n) => !n.isRead).length,
   };
+
+  // Add participant-specific fields if applicable
+  if (this.role === "participant") {
+    profile.ndisNumber = this.ndisNumber;
+    profile.dateOfBirth = this.dateOfBirth;
+    profile.contactNumber = this.contactNumber;
+    profile.address = this.address;
+  }
+
+  return profile;
 };
 
 // Get all assessors (static method)
@@ -192,6 +244,13 @@ UserSchema.statics.getAssessors = async function () {
 UserSchema.statics.getSupervisors = async function () {
   return await this.find({ role: "supervisor", isActive: true })
     .select("name email organization position")
+    .sort("name");
+};
+
+// Get all participants (static method)
+UserSchema.statics.getParticipants = async function () {
+  return await this.find({ role: "participant", isActive: true })
+    .select("name email ndisNumber dateOfBirth contactNumber")
     .sort("name");
 };
 
