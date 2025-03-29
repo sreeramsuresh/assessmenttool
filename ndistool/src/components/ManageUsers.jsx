@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-// import "../styles/ManageUsers.css";
+import "../styles/ManageUsers.css";
 
 const API_URL = import.meta.env.VITE_APP_API_URL || "http://localhost:5000";
 
